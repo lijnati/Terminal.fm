@@ -1,0 +1,40 @@
+# Terminal.fm configuration
+#
+# Location (run `terminalfm config` to print it):
+#   Linux    ~/.config/terminalfm/config.toml
+#   macOS    ~/Library/Application Support/terminalfm/config.toml
+#   Windows  %APPDATA%\terminalfm\config\config.toml
+#
+# Every key is optional; anything omitted uses the default shown here.
+
+# Folders scanned (recursively) for music.
+music_dirs = ["~/Music"]
+
+# mono | midnight | amber | paper
+theme = "midnight"
+
+# Startup volume, 0–100. The last-used volume is remembered separately.
+volume = 75
+
+# Seconds skipped by h / l (seek backward / forward).
+seek_seconds = 5
+
+[visualizer]
+# spectrum | waveform | minimal | off
+mode = "spectrum"
+# Gain applied to the analysis, 0.25–4.0.
+sensitivity = 1.0
+# Redraw rate while playing, 10–60. Paused or idle screens redraw far less often.
+fps = 30
+# Spectrum bar count; 0 fits the bars to the available width.
+bars = 0
+# Falling peak markers above spectrum bars.
+peaks = true
+
+# Key remaps. Action names are listed in the in-app help (?).
+# Keys: a single character, or one of: space enter tab backtab esc
+# up down left right home end pgup pgdn backspace delete f1–f12.
+[keys]
+# play_pause = "space"
+# next = "n"
+# previous = "p"
