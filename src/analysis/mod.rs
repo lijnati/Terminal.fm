@@ -65,7 +65,7 @@ pub struct Analyzer {
     frame: Frame,
     peak_hold: Vec<f32>,
     wave_gain: f32,
-    wave: Vec<f32>,
+    wave: Vec<(f32, f32)>,
     loud: bool,
 }
 
@@ -221,10 +221,10 @@ impl Analyzer {
         &self.frame
     }
 
-    /// Waveform for `points` horizontal positions, values in −1.0–1.0, centered on a
-    /// rising zero crossing so periodic signals stay still. Adaptive gain keeps
-    /// quiet passages visible; `dt` drives the gain envelope and frame blending.
-    pub fn waveform(&mut self, points: usize, dt: f32, sensitivity: f32) -> &[f32] {
+    /// Waveform envelope for `points` horizontal positions as `(min, max)` in −1.0–1.0,
+    /// aligned on a rising zero crossing so periodic signals stay still. Adaptive gain
+    /// keeps quiet passages visible; `dt` drives the gain envelope and frame blending.
+    pub fn waveform(&mut self, points: usize, dt: f32, sensitivity: f32) -> &[(f32, f32)] {
         let span = (FFT_SIZE / 2).max(points);
         let mut buf = Vec::with_capacity(span * 2);
         self.latest(span + span / 2, &mut buf);
@@ -241,14 +241,15 @@ impl Analyzer {
         self.wave_gain += (want - self.wave_gain) * (1.0 - (-rate * dt.clamp(0.0, 0.5)).exp());
 
         let gain = self.wave_gain * sensitivity;
-        let next = dsp::resample_columns(window, points);
+        let next = dsp::envelope_columns(window, points);
         if self.wave.len() != points {
-            self.wave = vec![0.0; points];
+            self.wave = vec![(0.0, 0.0); points];
         }
         let blend = 1.0 - (-25.0 * dt.clamp(0.0, 0.5)).exp();
-        for (w, n) in self.wave.iter_mut().zip(next) {
-            let target = if starved { 0.0 } else { (n * gain).clamp(-1.0, 1.0) };
-            *w += (target - *w) * blend;
+        for (w, (lo, hi)) in self.wave.iter_mut().zip(next) {
+            let scale = |v: f32| if starved { 0.0 } else { (v * gain).clamp(-1.0, 1.0) };
+            w.0 += (scale(lo) - w.0) * blend;
+            w.1 += (scale(hi) - w.1) * blend;
         }
         &self.wave
     }
@@ -347,7 +348,7 @@ mod tests {
         assert!(f.bands.iter().chain(&f.peaks).all(|b| b.is_finite()));
         assert!(f.rms.is_finite() && f.peak.is_finite());
         let w = a.waveform(40, 1.0 / 30.0, 1.0);
-        assert!(w.iter().all(|v| v.is_finite()));
+        assert!(w.iter().all(|v| v.0.is_finite() && v.1.is_finite()));
     }
 
     #[test]
@@ -397,7 +398,7 @@ mod tests {
             a.update(1.0 / 30.0, 8, 1.0);
             w = a.waveform(80, 1.0 / 30.0, 1.0).to_vec();
         }
-        let peak = w.iter().fold(0.0f32, |m, v| m.max(v.abs()));
+        let peak = w.iter().fold(0.0f32, |m, v| m.max(v.0.abs()).max(v.1.abs()));
         assert!(peak > 0.4 && peak <= 1.0, "quiet signal should be boosted: {peak}");
         assert_eq!(w.len(), 80);
     }
@@ -407,6 +408,6 @@ mod tests {
         let mut a = Analyzer::new();
         a.push(&vec![0.0; 4096], 1, SR);
         let w = a.waveform(20, 1.0 / 30.0, 1.0);
-        assert!(w.iter().all(|&v| v == 0.0));
+        assert!(w.iter().all(|&v| v == (0.0, 0.0)));
     }
 }

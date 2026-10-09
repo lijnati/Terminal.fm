@@ -89,16 +89,17 @@ pub fn rms(samples: &[f32]) -> f32 {
     (samples.iter().map(|s| s * s).sum::<f32>() / samples.len() as f32).sqrt()
 }
 
-/// Reduces `samples` to `points` values by averaging equal slices.
-pub fn resample_columns(samples: &[f32], points: usize) -> Vec<f32> {
+/// Reduces `samples` to `points` `(min, max)` pairs over equal slices — an
+/// envelope that keeps transients and noise visible instead of averaging them away.
+pub fn envelope_columns(samples: &[f32], points: usize) -> Vec<(f32, f32)> {
     if points == 0 || samples.is_empty() {
-        return vec![0.0; points];
+        return vec![(0.0, 0.0); points];
     }
     (0..points)
         .map(|p| {
             let a = p * samples.len() / points;
             let b = ((p + 1) * samples.len() / points).max(a + 1).min(samples.len());
-            samples[a..b].iter().sum::<f32>() / (b - a) as f32
+            samples[a..b].iter().fold((f32::MAX, f32::MIN), |(lo, hi), &s| (lo.min(s), hi.max(s)))
         })
         .collect()
 }
@@ -189,9 +190,9 @@ mod tests {
     }
 
     #[test]
-    fn resample_handles_more_points_than_samples() {
-        assert_eq!(resample_columns(&[1.0, 3.0], 1), vec![2.0]);
-        assert_eq!(resample_columns(&[1.0, 3.0], 4).len(), 4);
-        assert_eq!(resample_columns(&[], 3), vec![0.0; 3]);
+    fn envelope_keeps_extremes() {
+        assert_eq!(envelope_columns(&[1.0, -3.0, 0.5, 2.0], 2), vec![(-3.0, 1.0), (0.5, 2.0)]);
+        assert_eq!(envelope_columns(&[1.0, 3.0], 4).len(), 4);
+        assert_eq!(envelope_columns(&[], 3), vec![(0.0, 0.0); 3]);
     }
 }

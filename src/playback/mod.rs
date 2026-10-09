@@ -111,6 +111,11 @@ impl<T: Clone + PartialEq> Queue<T> {
         self.repeat = r;
     }
 
+    /// Position of the current entry in play order.
+    pub fn position(&self) -> Option<usize> {
+        self.pos
+    }
+
     /// Index into `items` of the current entry.
     pub fn current_index(&self) -> Option<usize> {
         self.pos.map(|p| self.order[p])
