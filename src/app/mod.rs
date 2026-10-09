@@ -370,7 +370,7 @@ impl App {
 
     fn save_config(&mut self) {
         if !self.config_writable {
-            self.set_status(StatusKind::Warn, "config.toml has errors — fix it to save settings");
+            self.set_status(StatusKind::Warn, "Changed for this session only — config.toml has errors");
             return;
         }
         if let Some(p) = &self.paths {
@@ -1127,8 +1127,8 @@ impl App {
     fn set_theme(&mut self, t: ThemeName) {
         self.config.theme = t;
         self.theme = Theme::new(t, self.color_depth);
-        self.save_config();
         self.info(format!("Theme · {}", t.label()));
+        self.save_config();
     }
 
     fn toggle_favorite(&mut self) {

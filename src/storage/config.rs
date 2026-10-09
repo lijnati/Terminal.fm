@@ -137,8 +137,17 @@ impl Config {
         self
     }
 
+    /// Parses config text. Errors are condensed to one line, e.g.
+    /// `line 1: unknown variant `neon`, expected one of …`.
     pub fn parse(text: &str) -> Result<Self, String> {
-        toml::from_str::<Config>(text).map(Config::sanitized).map_err(|e| e.to_string())
+        toml::from_str::<Config>(text).map(Config::sanitized).map_err(|e| {
+            let line = e.span().map(|s| text[..s.start.min(text.len())].lines().count().max(1));
+            let msg = e.message().trim().to_string();
+            match line {
+                Some(n) => format!("line {n}: {msg}"),
+                None => msg,
+            }
+        })
     }
 
     pub fn load(path: &Path) -> ConfigLoad {
@@ -147,7 +156,7 @@ impl Config {
             Err(e) => ConfigLoad::Invalid(format!("cannot read {}: {e}", path.display())),
             Ok(text) => match Self::parse(&text) {
                 Ok(c) => ConfigLoad::Loaded(c),
-                Err(e) => ConfigLoad::Invalid(format!("{}: {e}", path.display())),
+                Err(e) => ConfigLoad::Invalid(format!("config.toml {e}")),
             },
         }
     }
@@ -193,6 +202,13 @@ mod tests {
         assert_eq!(c.volume, 100);
         assert_eq!(c.visualizer.fps, FPS_MAX);
         assert_eq!(c.visualizer.sensitivity, SENSITIVITY_MIN);
+    }
+
+    #[test]
+    fn errors_are_one_line_with_a_line_number() {
+        let e = Config::parse("volume = 50\ntheme = \"neon\"\n").unwrap_err();
+        assert!(e.starts_with("line 2: "), "{e}");
+        assert!(e.contains("neon") && !e.contains('\n'), "{e}");
     }
 
     #[test]

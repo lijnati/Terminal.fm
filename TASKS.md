@@ -5,7 +5,7 @@ Implementation checklist. `[x]` = implemented **and** verified by tests or a cap
 ## Foundation
 - [x] Cargo scaffold, `terminalfm` + `tfm` binaries, release profile
 - [x] CLAUDE.md, TASKS.md, .gitignore, rustfmt.toml
-- [ ] CI workflow (fmt, clippy, test on Linux/macOS/Windows)
+- [x] CI workflow written (fmt, clippy, test on Linux/macOS/Windows) — not yet run on GitHub
 
 ## Core
 - [x] Track model, metadata normalization + filename/folder fallbacks
@@ -31,22 +31,30 @@ Implementation checklist. `[x]` = implemented **and** verified by tests or a cap
 - [x] Signal states: none / silence / active (no fake motion)
 
 ## UI
-- [ ] Terminal lifecycle (raw mode, alt screen, panic restore)
-- [ ] Theme tokens: Mono, Midnight, Amber, Paper
-- [ ] Responsive layouts (full / standard / compact / tiny)
-- [ ] Welcome / first-run flow with directory input + scan progress
-- [ ] Now Playing (track info, visualizer, progress, controls, queue preview)
-- [ ] Library (tracks/artists/albums/genres), sorting
-- [ ] Search
-- [ ] Playlists (create/rename/delete, add/remove/reorder)
-- [ ] Favorites, Recently played
-- [ ] Settings
-- [ ] Help overlay generated from keymap
-- [ ] Visualizer renderers: spectrum, waveform, minimal, off
+- [x] Terminal lifecycle (raw mode, alt screen, panic restore)
+- [x] Theme tokens: Mono, Midnight, Amber, Paper
+- [x] Responsive layouts (full / standard / compact / tiny)
+- [x] Welcome / first-run flow with directory input + scan progress
+- [x] Now Playing (track info, visualizer, progress, controls, queue preview)
+- [x] Library (tracks/artists/albums/genres), sorting
+- [x] Search
+- [x] Playlists (create/rename/delete, add/remove/reorder)
+- [x] Favorites, Recently played
+- [x] Settings
+- [x] Help overlay generated from keymap
+- [x] Visualizer renderers: spectrum, waveform, minimal, off
 
 ## CLI
-- [ ] `terminalfm [PATH]`, `scan`, `config`, `--help`, `--version`, `--no-audio`
+- [x] `terminalfm [PATH]`, `scan`, `config`, `--help`, `--version`, `--no-audio`
 
 ## Docs & release prep
-- [ ] README, CONTRIBUTING, LICENSE-MIT, LICENSE-APACHE
-- [ ] Final verification pass + terminal captures
+- [x] README, CONTRIBUTING, LICENSE-MIT, LICENSE-APACHE
+- [x] Final verification pass + terminal captures
+
+## Known gaps / next
+- [ ] Real speaker output, macOS and Windows: unverified (no device / platforms in dev container)
+- [ ] SIGTERM/SIGHUP handler to restore the terminal when killed
+- [ ] Two-column help overlay on wide terminals
+- [ ] Gapless playback; ReplayGain
+- [ ] Opus / ALAC (needs extra symphonia features + fixtures)
+- [ ] Library file watching instead of rescan-on-start

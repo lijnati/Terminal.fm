@@ -100,9 +100,7 @@ pub fn main() -> ExitCode {
     let (mut config, config_writable, first_run, mut warnings) = match Config::load(&paths.config_file) {
         ConfigLoad::Missing => (Config::default(), true, true, Vec::new()),
         ConfigLoad::Loaded(c) => (c, true, false, Vec::new()),
-        ConfigLoad::Invalid(e) => {
-            (Config::default(), false, false, vec![format!("Invalid config, using defaults: {e}")])
-        }
+        ConfigLoad::Invalid(e) => (Config::default(), false, false, vec![format!("Using defaults — {e}")]),
     };
 
     match cli.command {

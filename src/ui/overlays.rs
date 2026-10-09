@@ -299,7 +299,7 @@ pub fn welcome(f: &mut Frame, area: Rect, app: &mut App) {
     y += 2;
     Line::styled(
         truncate("Everything stays on this machine. No accounts, no network.", col_w as usize),
-        theme.faint(),
+        theme.muted(),
     )
     .render(line_at(col, y), buf);
 }
